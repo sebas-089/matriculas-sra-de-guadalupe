@@ -14,6 +14,7 @@ import { z } from "zod";
 export const PaymentStatusSchema = z.enum(["PENDIENTE", "APROBADO", "RECHAZADO", "REVISION_MANUAL"]);
 export const PaymentMethodSchema = z.enum(["PSE", "TARJETA", "EFECTIVO", "CONSIGNACION", "TRANSFERENCIA"]);
 export const AdminRoleSchema = z.enum(["SUPER_ADMIN", "RECTOR", "SECRETARIA", "CONTABILIDAD"]);
+export const StudentGradeSchema = z.enum(["Pre jardín", "Jardín", "Transición", "Primero (1°)", "Cuarto (4°)", "Quinto (5°)"]);
 
 export const MatriculaSchema = z.object({
   id: z.number().int(),
@@ -57,7 +58,7 @@ export const CreateMatriculaBody = z.object({
     tipo_documento: z.enum(["RC", "TI", "CC", "CE"]),
     documento_identidad: z.string().min(4),
     fecha_nacimiento: z.coerce.date(),
-    grado_al_que_aspira: z.string(),
+    grado_al_que_aspira: StudentGradeSchema,
     eps: z.string(),
     tipo_sangre: z.enum(["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"]),
     observaciones_medicas: z.string().optional(),

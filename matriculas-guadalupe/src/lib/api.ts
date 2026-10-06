@@ -2,6 +2,7 @@ import { useMutation, useQuery, type UseMutationResult, type UseQueryResult } fr
 
 export type PaymentStatus = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'REVISION_MANUAL';
 export type PaymentMethod = 'PSE' | 'TARJETA' | 'EFECTIVO' | 'CONSIGNACION' | 'TRANSFERENCIA';
+export type StudentGrade = 'Pre jardín' | 'Jardín' | 'Transición' | 'Primero (1°)' | 'Cuarto (4°)' | 'Quinto (5°)';
 
 export type GuardianInput = {
   nombre_completo: string;
@@ -19,7 +20,7 @@ export type StudentInput = {
   tipo_documento: string;
   documento_identidad: string;
   fecha_nacimiento: string;
-  grado_al_que_aspira: string;
+  grado_al_que_aspira: StudentGrade;
   eps: string;
   tipo_sangre: string;
   observaciones_medicas: string;

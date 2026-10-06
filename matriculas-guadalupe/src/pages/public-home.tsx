@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, Check, ChevronLeft, FileText, LockKeyhole, Search, ShieldCheck, Sparkles, MessageCircle } from 'lucide-react';
-import { useCreateMatricula, useHealthCheck, type GuardianInput, type MatriculaInput, type StudentInput } from '@/lib/api';
+import { useCreateMatricula, useHealthCheck, type GuardianInput, type MatriculaInput, type StudentGrade, type StudentInput } from '@/lib/api';
 import { BrandMark, SecureNote } from '@/components/brand';
 import { useSettings } from '@/components/settings-provider';
 
 const COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-const grades = ['Transición', 'Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto', 'Sexto', 'Séptimo', 'Octavo', 'Noveno', 'Décimo', 'Undécimo'];
+const grades: StudentGrade[] = ['Pre jardín', 'Jardín', 'Transición', 'Primero (1°)', 'Cuarto (4°)', 'Quinto (5°)'];
 const inputClass = 'focus-ring glass-control h-11 w-full rounded-lg border px-3.5 text-sm font-medium outline-none transition-ui placeholder:text-[hsl(var(--muted-foreground)/.7)] focus:border-[hsl(var(--primary))] focus:shadow-[0_0_0_3px_hsl(var(--primary)/.12)]';
 const normalizeWhatsapp = (value: string) => (value || '').replace(/[^0-9]/g, '');
 
@@ -29,9 +29,12 @@ export default function PublicHome() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [guardian, setGuardian] = useState<GuardianInput>({ nombre_completo: '', tipo_documento: 'CC', documento_identidad: '', correo: '', telefono: '', direccion: '', ocupacion: '' });
-  const [student, setStudent] = useState<StudentInput>({ nombre_completo: '', tipo_documento: 'TI', documento_identidad: '', fecha_nacimiento: '', grado_al_que_aspira: 'Primero', eps: '', tipo_sangre: 'O+', observaciones_medicas: '' });
+  const [student, setStudent] = useState<StudentInput>({ nombre_completo: '', tipo_documento: 'TI', documento_identidad: '', fecha_nacimiento: '', grado_al_que_aspira: 'Primero (1°)', eps: '', tipo_sangre: 'O+', observaciones_medicas: '' });
   const updateGuardian = <K extends keyof GuardianInput>(key: K, value: GuardianInput[K]) => setGuardian((current) => ({ ...current, [key]: value }));
-  const updateStudent = <K extends keyof StudentInput>(key: K, value: StudentInput[K]) => setStudent((current) => ({ ...current, [key]: value }));
+  const updateStudent = <K extends keyof StudentInput>(key: K, value: K extends 'grado_al_que_aspira' ? string : StudentInput[K]) => {
+    if (key === 'grado_al_que_aspira' && !grades.some((grade) => grade === value)) return;
+    setStudent((current) => ({ ...current, [key]: value as StudentInput[K] }));
+  };
   const next = (event: React.FormEvent) => { event.preventDefault(); setErrorMessage(''); setStep((current) => Math.min(3, current + 1)); };
   const submit = (event: React.FormEvent) => {
     event.preventDefault(); setErrorMessage('');
