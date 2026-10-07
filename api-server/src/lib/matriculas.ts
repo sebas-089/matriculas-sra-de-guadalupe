@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, lte, notInArray, or, sql } from "drizzle-orm";
 import {
   acudientesTable,
   db,
@@ -241,17 +241,23 @@ export async function listMatriculas(
 }
 
 export async function getDashboardStats() {
+  const validMatriculaFilter = and(
+    eq(matriculasTable.anioLectivo, 2027),
+    lte(matriculasTable.montoTotal, 10_000),
+    notInArray(estudiantesTable.gradoAlQueAspira, ["Segundo", "2°", "Tercero", "3°"]),
+  );
   const [totals, groupedGrades] = await Promise.all([
     db
       .select({
-        totalMatriculas: sql<number>`count(*)`,
-        totalRecaudado: sql<number>`coalesce(sum(case when ${matriculasTable.estadoPago} = 'APROBADO' then ${matriculasTable.montoTotal} else 0 end), 0)`,
+        totalMatriculas: sql<number>`count(*) filter (where ${validMatriculaFilter})`,
+        totalRecaudado: sql<number>`coalesce(sum(case when ${validMatriculaFilter} and ${matriculasTable.estadoPago} = 'APROBADO' then ${matriculasTable.montoTotal} else 0 end), 0)`,
         aprobadas: sql<number>`count(*) filter (where ${matriculasTable.estadoPago} = 'APROBADO')`,
         pendientes: sql<number>`count(*) filter (where ${matriculasTable.estadoPago} = 'PENDIENTE')`,
         revisionManual: sql<number>`count(*) filter (where ${matriculasTable.estadoPago} = 'REVISION_MANUAL')`,
         rechazadas: sql<number>`count(*) filter (where ${matriculasTable.estadoPago} = 'RECHAZADO')`,
       })
-      .from(matriculasTable),
+      .from(matriculasTable)
+      .innerJoin(estudiantesTable, eq(matriculasTable.estudianteId, estudiantesTable.id)),
     db
       .select({
         grado: estudiantesTable.gradoAlQueAspira,

@@ -83,6 +83,8 @@ const statusOptions: { value: PaymentStatus | ''; label: string }[] = [
   { value: 'RECHAZADO', label: 'Rechazados' },
 ];
 
+const visibleGrades = new Set(['Pre jardín', 'Jardín', 'Transición', 'Primero', 'Cuarto', 'Quinto']);
+
 const estadoMatriculaLabels: Record<PaymentStatus, string> = {
   PENDIENTE: 'Pendiente de pago',
   APROBADO: 'Matrícula aprobada',
@@ -643,7 +645,9 @@ export default function AdminDashboard() {
   };
 
   const data = statsQuery.data;
-  const rows = listQuery.data?.matriculas ?? [];
+  const rows = (listQuery.data?.matriculas ?? []).filter(
+    (row) => visibleGrades.has(row.grado) && row.monto_total <= 10_000,
+  );
   const filtersActive = Boolean(status || grade || appliedSearch);
 
   if (!localStorage.getItem('guadalupe_token')) return null;
@@ -784,7 +788,7 @@ export default function AdminDashboard() {
                         <h2 className="font-display text-2xl">Últimas solicitudes</h2>
                       </div>
                       <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                        {listQuery.data?.total ?? 0} registros que coinciden con tus filtros
+                        {rows.length} registros vigentes que coinciden con tus filtros
                         {filtersActive ? ' (la exportación respeta estos filtros)' : ''}
                       </p>
                     </div>
@@ -842,7 +846,7 @@ export default function AdminDashboard() {
                         data-testid="select-filter-grade"
                       >
                         <option value="">Todos los grados</option>
-                        {(data?.por_grado ?? []).map((item) => (
+                        {(data?.por_grado ?? []).filter((item) => visibleGrades.has(item.grado)).map((item) => (
                           <option value={item.grado} key={item.grado}>{item.grado}</option>
                         ))}
                       </select>
